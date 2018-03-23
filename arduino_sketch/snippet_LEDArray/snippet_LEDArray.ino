@@ -5,7 +5,14 @@
 #define STATE_5 6 //Discount Recieved 
 #define STATE_6 7 //Error
 
-
+void setup(){
+  pinMode(STATE_1, OUTPUT);
+  pinMode(STATE_2, OUTPUT);
+  pinMode(STATE_3, OUTPUT);
+  pinMode(STATE_4, OUTPUT);
+  pinMode(STATE_5, OUTPUT);
+  pinMode(STATE_6, OUTPUT);
+}
 
 void ledArray(int state){
   switch(state){
