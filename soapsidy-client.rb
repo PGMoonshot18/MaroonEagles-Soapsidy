@@ -32,6 +32,14 @@ if port_connected?(port_str)
   sp.read_timeout = 0
   while true do
     # The program loop
+    # When C is read from Serial, a card is detected
+    #   It then writes a 'C' to Serial if card does have a subsidy
+    #   It writes 'c' otherwise
+    # When P is read from Serial, the soap was pumped
+    #   It then writes a 'P' to Serial if the transaction of subsidy was
+    #     successful
+    #   It writes 'p' otherwise
+
     sp_input = sp.getc
 
     if sp_input == 'C'
@@ -43,7 +51,13 @@ if port_connected?(port_str)
       res = Net::HTTP.start(url.host, url.port) {|http|
           http.request(req)
       }
-      puts res.body
+      if res.body.to_i != 0
+        puts "Card has a subsidy."
+        sp.write('C')
+      else
+        puts "Card has no subsidy."
+        sp.write('c')
+      end
 
       # Write serial bit to Arduino
     elsif sp_input == 'P'
@@ -55,11 +69,19 @@ if port_connected?(port_str)
 
       data = { sid: read_sid(sp) }
       response = Net::HTTP.post_form(uri, data)
-      status = JSON.parse(response.body)[:status]
-      puts status
-      puts response.body
+      status = JSON.parse(response.body)["status"]
 
       # Write serial bit to Arduino
+      if status == "success"
+        puts "Subsidy complete."
+        sp.write('P')
+      elsif status == "failure"
+        puts "No subsidy remaining."
+        sp.write('N')
+      else
+        puts "An error occurred with the subsidy."
+        sp.write('p')
+      end
     end
   end
 else
