@@ -38,6 +38,8 @@
 #define STATE_5 12 //Discount Recieved 
 #define STATE_6 13 //Error
 
+#define SOAPBUTTON 6
+
 constexpr uint8_t RST_PIN = 5;     // Configurable, see typical pin layout above
 constexpr uint8_t SS_PIN = 53;     // Configurable, see typical pin layout above
  
@@ -68,6 +70,8 @@ void setup() {
   pinMode(STATE_4, OUTPUT);
   pinMode(STATE_5, OUTPUT);
   pinMode(STATE_6, OUTPUT);
+
+  pinMode(SOAPBUTTON,INPUT);
 }
  
 void loop() {
@@ -78,6 +82,8 @@ void loop() {
     ledArray(choice);
   }
   //Serial.print(choice);
+
+  
 }
 
 void readCard(){
