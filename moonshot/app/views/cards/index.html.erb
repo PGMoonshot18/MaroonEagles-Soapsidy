@@ -2,13 +2,14 @@
 
 <h1>Cards</h1>
 
-<table>
+<table class="ui celled table">
   <thead>
     <tr>
-      <th>Sid</th>
-      <th>Money</th>
+      <th>Card ID#</th>
+      <!-- <th>Money</th> -->
       <th>Flag</th>
-      <th colspan="3"></th>
+      <th>Number of Pumps</th>
+      <!-- <th colspan="3"></th> -->
     </tr>
   </thead>
 
@@ -16,12 +17,12 @@
     <% @cards.each do |card| %>
       <tr>
         <td><%= card.sid %></td>
-        <td><%= card.money %></td>
+        <!-- <td><%= card.money %></td> -->
         <td><%= card.flag %></td>
         <td><%= card.pump %></td>
-        <td><%= link_to 'Show', card %></td>
+        <!-- <td><%= link_to 'Show', card %></td>
         <td><%= link_to 'Edit', edit_card_path(card) %></td>
-        <td><%= link_to 'Destroy', card, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Destroy', card, method: :delete, data: { confirm: 'Are you sure?' } %></td> -->
       </tr>
     <% end %>
   </tbody>
@@ -29,4 +30,4 @@
 
 <br>
 
-<%= link_to 'New Card', new_card_path %>
+<!-- <%= link_to 'New Card', new_card_path %> -->

@@ -51,7 +51,6 @@ class CardsController < ApplicationController
     @res = {status: "failure"} # flag == 0
     if @card.flag == 1
       @card.flag = 0
-      @card.money += 1
       @card.pump += 1
       @res = {status: "success"}
     end
