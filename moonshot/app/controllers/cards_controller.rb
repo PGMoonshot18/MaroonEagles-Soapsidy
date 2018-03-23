@@ -48,9 +48,13 @@ class CardsController < ApplicationController
   # POST /cards/pump
   def post_sid
     @card = Card.where(sid: sid_params).first
-    @card.flag = 0
-    @card.money += 1
-    @res = {status: "success"}
+    @res = {status: "failure"} # flag == 0
+    if @card.flag == 1
+      @card.flag = 0
+      @card.money += 1
+      @card.pump += 1
+      @res = {status: "success"}
+    end
     respond_to do |format|
       if @card.save
         #format.html { redirect_to @card, notice: 'Card was successfully created.' }
@@ -95,7 +99,7 @@ class CardsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def card_params
-      params.require(:card).permit(:sid, :money, :flag)
+      params.require(:card).permit(:sid, :money, :flag, :pump)
     end
 
     def sid_params
