@@ -15,10 +15,19 @@ if port_connected?(port_str)
   sp = SerialPort.new(port_str, baud_rate, data_bits, stop_bits, parity)
   sp.read_timeout = 0
   #userin = gets.to_i
-  userin = gets.strip
-  puts userin
-  sp.write(userin)
-  puts sp.getc
+  #userin = gets.strip
+  #puts userin
+  #sp.write(userin)
+  #puts sp.getc
+  while true do
+    if sp.getc
+      buf = ""
+      for i in 1.."ard: 12345678".length do
+        buf += sp.getc
+      end
+      puts buf
+    end
+  end
 else
   puts "no"
 end

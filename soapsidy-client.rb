@@ -2,13 +2,22 @@
 
 require 'serialport'
 require 'net/http'
+require 'json'
 
 def port_connected?(port)
   return true if Dir.glob(port).count == 1
 end
 
 def read_sid(sp)
-  return "12.34.56.78"
+  # Structure of next output: 'ard: XXXXXXXX'
+  for i in 1..5 do
+    sp.getc
+  end
+  buf = ""
+  for i in 1..8 do
+    buf += sp.getc
+  end
+  return buf
 end
 
 port_str = "/dev/ttyUSB0"
@@ -25,7 +34,7 @@ if port_connected?(port_str)
     # The program loop
     sp_input = sp.getc
 
-    if sp_input == 'a'
+    if sp_input == 'C'
       # Card is detected
       # Send card ID, get status of card
       puts "Card detected."
@@ -37,17 +46,18 @@ if port_connected?(port_str)
       puts res.body
 
       # Write serial bit to Arduino
-    elsif sp_input == 'b'
+    elsif sp_input == 'P'
       # Pump is activated
       # Post flag, server resets discount and adds subsidy, returns response
       puts "Pump activated."
-      url = URI.parse("http://localhost:3000/cards/pump/")
-      req = Net::HTTP::Post.new(url.to_s)
-      req.body = "{:sid => 'a1b2cd4'}"
-      res = Net::HTTP.start(url.host, url.port) {|http|
-          http.request(req)
-      }
-      puts res.body
+      uri = URI.parse("http://localhost:3000/cards/pump/")
+      header = {'Content-Type': 'text/json'}
+
+      data = { sid: read_sid(sp) }
+      response = Net::HTTP.post_form(uri, data)
+      status = JSON.parse(response.body)[:status]
+      puts status
+      puts response.body
 
       # Write serial bit to Arduino
     end
