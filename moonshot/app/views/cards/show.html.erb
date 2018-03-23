@@ -1,0 +1,19 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Sid:</strong>
+  <%= @card.sid %>
+</p>
+
+<p>
+  <strong>Money:</strong>
+  <%= @card.money %>
+</p>
+
+<p>
+  <strong>Flag:</strong>
+  <%= @card.flag %>
+</p>
+
+<%= link_to 'Edit', edit_card_path(@card) %> |
+<%= link_to 'Back', cards_path %>
