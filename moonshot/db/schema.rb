@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180323135840) do
+ActiveRecord::Schema.define(version: 20180323192158) do
 
   create_table "cards", force: :cascade do |t|
     t.string "sid"
@@ -18,6 +18,7 @@ ActiveRecord::Schema.define(version: 20180323135840) do
     t.integer "flag"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "pump"
   end
 
 end
