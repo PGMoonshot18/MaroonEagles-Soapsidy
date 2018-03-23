@@ -37,6 +37,32 @@ class CardsController < ApplicationController
     end
   end
 
+  # GET /cards/:sid
+  def get_sid
+    @card = Card.where(sid: params[:sid]).first.flag
+    respond_to do |format|
+      format.json  { render json: @card }
+    end
+  end
+
+  # POST /cards/pump
+  def post_sid
+    @card = Card.where(sid: card_params[:sid]).first
+    @card.flag = 0
+    @card.money += 1
+    @res = {status: "success"}
+    respond_to do |format|
+      if @card.save
+        #format.html { redirect_to @card, notice: 'Card was successfully created.' }
+        format.json { render json: @res }
+      else
+        # format.html { render :new }
+        @res[:status] = "error"
+        format.json { render json: @res }
+      end
+    end
+  end
+
   # PATCH/PUT /cards/1
   # PATCH/PUT /cards/1.json
   def update
