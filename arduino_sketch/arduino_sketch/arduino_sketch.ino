@@ -31,6 +31,7 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
+#define STATE_0 0 //Idle
 #define STATE_1 8 //ID Accepted
 #define STATE_2 9 //ID No Discount
 #define STATE_3 10 //ID Yes Discount
@@ -50,6 +51,9 @@ MFRC522::MIFARE_Key key;
 // Init array that will store new NUID 
 byte nuidPICC[4];
 int choice = 0;
+
+// State Variables
+int state = STATE_0;
 
 void setup() { 
   Serial.begin(9600);
@@ -105,6 +109,9 @@ void readCard(){
     rfid.uid.uidByte[3] != nuidPICC[3] ) {
     //Serial.println(F("A new card has been detected."));
 
+    // Move to card detected state
+    state = STATE_1;
+
     // Store NUID into nuidPICC array
     for (byte i = 0; i < 4; i++) {
       nuidPICC[i] = rfid.uid.uidByte[i];
@@ -112,6 +119,7 @@ void readCard(){
    
     //Serial.println(F("The NUID tag is:"));
     //Serial.print(F("In hex: "));
+    Serial.print("Card: ");
     printHex(rfid.uid.uidByte, rfid.uid.size);
     Serial.println();
     //Serial.print(F("In dec: "));
@@ -135,7 +143,7 @@ void readCard(){
  */
 void printHex(byte *buffer, byte bufferSize) {
   for (byte i = 0; i < bufferSize; i++) {
-    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    Serial.print(buffer[i] < 0x10 ? "0" : "");
     Serial.print(buffer[i], HEX);
   }
 }
