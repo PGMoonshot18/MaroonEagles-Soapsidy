@@ -51,8 +51,26 @@ class CardsController < ApplicationController
     @res = {status: "failure"} # flag == 0
     if @card.flag == 1
       @card.flag = 0
-      @card.money += 1
       @card.pump += 1
+      @res = {status: "success"}
+    end
+    respond_to do |format|
+      if @card.save
+        #format.html { redirect_to @card, notice: 'Card was successfully created.' }
+        format.json { render json: @res }
+      else
+        # format.html { render :new }
+        @res[:status] = "error"
+        format.json { render json: @res }
+      end
+    end
+  end
+
+  def post_sid_soap
+    @card = Card.where(sid: sid_params).first
+    @res = {status: "failure"} # flag == 0
+    if @card.pump >= 25
+      @card.pump -= 25
       @res = {status: "success"}
     end
     respond_to do |format|
