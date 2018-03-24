@@ -66,6 +66,25 @@ class CardsController < ApplicationController
     end
   end
 
+  def post_sid_soap
+    @card = Card.where(sid: sid_params).first
+    @res = {status: "failure"} # flag == 0
+    if @card.pump >= 25
+      @card.pump -= 25
+      @res = {status: "success"}
+    end
+    respond_to do |format|
+      if @card.save
+        #format.html { redirect_to @card, notice: 'Card was successfully created.' }
+        format.json { render json: @res }
+      else
+        # format.html { render :new }
+        @res[:status] = "error"
+        format.json { render json: @res }
+      end
+    end
+  end
+
   # PATCH/PUT /cards/1
   # PATCH/PUT /cards/1.json
   def update
