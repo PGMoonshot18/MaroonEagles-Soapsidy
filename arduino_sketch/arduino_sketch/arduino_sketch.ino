@@ -46,6 +46,9 @@
 
 #define SOAPBUTTON 6
 
+#define IS_PUMP 0
+#define IS_DISPENSER 1
+
 constexpr uint8_t RST_PIN = 5;     // Configurable, see typical pin layout above
 constexpr uint8_t SS_PIN = 53;     // Configurable, see typical pin layout above
  
@@ -59,12 +62,22 @@ int choice = 0;
 
 // State Variables
 int state = STATE_0;
+int hw_type = IS_PUMP;
+unsigned long lastCard;
+unsigned long lastPump;
+unsigned long lastTrans;
+unsigned long curr;
 
 void setup() { 
   Serial.begin(9600);
   SPI.begin(); // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522 
 
+  lastCard = millis();
+  lastPump = millis();
+  lastTrans = millis();
+  curr = millis();
+  
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
@@ -84,16 +97,53 @@ void setup() {
 }
  
 void loop() {
-  readCard();
-  readPump();
+  //Serial.print("State: ");
+  //Serial.print(state);
+  //Serial.println();
+  curr = millis();
+  // Timeouts and auto state changes
+  if (state == STATE_1 && curr - lastTrans >= 1000) {
+    // Card but no response, go to error
+    state = STATE_2;
+    ledArray(2);
+    lastTrans = millis();
+  } else if (state == STATE_2 && curr - lastTrans >= 1000) {
+    // No subsidy, go back to idle
+    state = STATE_0;
+    ledArray(0);
+    lastTrans = millis();
+  } else if (state == STATE_3 && curr - lastTrans >= 1000) {
+    // Subsidy, go to soap ready
+    state = STATE_4;
+    ledArray(4);
+    lastTrans = millis();
+  } else if (state == STATE_4 && curr - lastTrans >= 2000) {
+    // Soap ready but no one pumps, go back to idle
+    state = STATE_0;
+    ledArray(0);
+    lastTrans = millis();
+  }
+  
+  // Only read cards when in idle state
+  if(state == STATE_0) {
+    readCard();
+  }
 
+  // Only read pump if 1. Is pump and 2. is in soap ready state
+  if(hw_type == IS_PUMP && state == STATE_4){
+    readPump();
+  }
+
+  // Receive data from server
   if(Serial.available() > 0){
     choice = Serial.parseInt();
     // Change states depending on result and previous state
     if (choice == 3 && state == STATE_1) {
       state = STATE_3;
+      lastTrans = millis();
     } else if (choice == 2 && state == STATE_1) {
       state = STATE_2;
+      lastTrans = millis();
     }
     
     ledArray(choice);
@@ -108,7 +158,7 @@ void readPump(){
     Serial.print("Pump: ");
     printHex(nuidPICC, 4);
     Serial.println();
-    delay(3000);
+    delay(1000);
   }
   /*
   Serial.print(analogRead(SOAPBUTTON));
@@ -136,6 +186,9 @@ void readCard(){
 
     // Move to card detected state
     state = STATE_1;
+    ledArray(1);
+    lastCard = millis();
+    lastTrans = millis();
 
     // Store NUID into nuidPICC array
     for (byte i = 0; i < 4; i++) {
@@ -144,10 +197,13 @@ void readCard(){
    
     //Serial.println(F("The NUID tag is:"));
     //Serial.print(F("In hex: "));
-    Serial.print("Card: ");
+    if (hw_type == IS_PUMP) {
+      Serial.print("Card: ");
+    } else {
+      Serial.print("Soap: ");
+    }
     printHex(rfid.uid.uidByte, rfid.uid.size);
     Serial.println();
-    ledArray(1);
     //Serial.print(F("In dec: "));
     //printDec(rfid.uid.uidByte, rfid.uid.size);
     //Serial.println();
@@ -186,6 +242,14 @@ void printDec(byte *buffer, byte bufferSize) {
 
 void ledArray(int state){
   switch(state){
+    case 0:
+      digitalWrite(STATE_1, LOW);
+      digitalWrite(STATE_2, LOW);
+      digitalWrite(STATE_3, LOW);
+      digitalWrite(STATE_4, LOW);
+      digitalWrite(STATE_5, LOW);
+      digitalWrite(STATE_6, LOW);
+      break;
     case 1:
       digitalWrite(STATE_1, HIGH);
       digitalWrite(STATE_2, LOW);

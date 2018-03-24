@@ -82,6 +82,28 @@ if port_connected?(port_str)
         puts "An error occurred with the subsidy."
         sp.write('6')
       end
+    elsif sp_input == 'S'
+      # Soap dispenser should dispense soap
+      # Post Serial ID, returns success or failure
+      puts "Soap will be dispensed."
+      uri = URI.parse("http://localhost:3000/cards/soap/")
+      header = {'Content-Type': 'text/json'}
+
+      data = { sid: read_sid(sp) }
+      response = Net::HTTP.post_form(uri, data)
+      status = JSON.parse(response.body)["status"]
+
+      # Write serial bit to Arduino
+      if status == "success"
+        puts "Soap dispensed."
+        sp.write('5')
+      elsif status == "failure"
+        puts "Please collect more points."
+        sp.write('6')
+      else
+        puts "An error occurred with the dispenser."
+        sp.write('6')
+      end
     end
   end
 else
