@@ -21,3 +21,5 @@
 /moonshot/yarn-error.log
 
 /moonshot/.byebug_history
+
+*.*.swp

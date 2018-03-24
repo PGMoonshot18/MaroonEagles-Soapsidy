@@ -1,3 +1,8 @@
+#include <deprecated.h>
+#include <require_cpp11.h>
+#include <MFRC522.h>
+#include <MFRC522Extended.h>
+
 /*
  * --------------------------------------------------------------------------------------------------------------------
  * Example sketch/program showing how to read new NUID from a PICC to serial.
@@ -80,16 +85,36 @@ void setup() {
  
 void loop() {
   readCard();
+  readPump();
 
   if(Serial.available() > 0){
     choice = Serial.parseInt();
+    // Change states depending on result and previous state
+    if (choice == 3 && state == STATE_1) {
+      state = STATE_3;
+    } else if (choice == 2 && state == STATE_1) {
+      state = STATE_2;
+    }
+    
     ledArray(choice);
   }
   //Serial.print(choice);
 
   
 }
-
+void readPump(){
+  // Check if the soap pump reads high
+  if (digitalRead(SOAPBUTTON) == HIGH) {
+    Serial.print("Pump: ");
+    printHex(nuidPICC, 4);
+    Serial.println();
+    delay(3000);
+  }
+  /*
+  Serial.print(analogRead(SOAPBUTTON));
+  Serial.println();
+  */
+}
 void readCard(){
   // Look for new cards
   if ( ! rfid.PICC_IsNewCardPresent())
@@ -122,6 +147,7 @@ void readCard(){
     Serial.print("Card: ");
     printHex(rfid.uid.uidByte, rfid.uid.size);
     Serial.println();
+    ledArray(1);
     //Serial.print(F("In dec: "));
     //printDec(rfid.uid.uidByte, rfid.uid.size);
     //Serial.println();

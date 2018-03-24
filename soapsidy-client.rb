@@ -53,10 +53,10 @@ if port_connected?(port_str)
       }
       if res.body.to_i != 0
         puts "Card has a subsidy."
-        sp.write('C')
+        sp.write('3')
       else
         puts "Card has no subsidy."
-        sp.write('c')
+        sp.write('2')
       end
 
       # Write serial bit to Arduino
@@ -74,13 +74,13 @@ if port_connected?(port_str)
       # Write serial bit to Arduino
       if status == "success"
         puts "Subsidy complete."
-        sp.write('P')
+        sp.write('5')
       elsif status == "failure"
         puts "No subsidy remaining."
-        sp.write('N')
+        sp.write('6')
       else
         puts "An error occurred with the subsidy."
-        sp.write('p')
+        sp.write('6')
       end
     end
   end
