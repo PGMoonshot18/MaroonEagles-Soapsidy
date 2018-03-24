@@ -43,6 +43,7 @@
 #define STATE_4 11 //Soap Ready to Dispense
 #define STATE_5 12 //Discount Recieved 
 #define STATE_6 13 //Error
+#define STATE_7 1 // Pumped, waiting for response
 
 #define SOAPBUTTON 6
 
@@ -103,22 +104,37 @@ void loop() {
   curr = millis();
   // Timeouts and auto state changes
   if (state == STATE_1 && curr - lastTrans >= 1000) {
-    // Card but no response, go to error
+    // Card but no response, go to error (1 s)
     state = STATE_2;
     ledArray(2);
     lastTrans = millis();
   } else if (state == STATE_2 && curr - lastTrans >= 1000) {
-    // No subsidy, go back to idle
+    // No subsidy, go back to idle (1 s)
     state = STATE_0;
     ledArray(0);
     lastTrans = millis();
-  } else if (state == STATE_3 && curr - lastTrans >= 1000) {
-    // Subsidy, go to soap ready
+  } else if (state == STATE_3 && curr - lastTrans >= 500) {
+    // Subsidy, go to soap ready (0.5 s)
     state = STATE_4;
     ledArray(4);
     lastTrans = millis();
-  } else if (state == STATE_4 && curr - lastTrans >= 2000) {
-    // Soap ready but no one pumps, go back to idle
+  } else if (state == STATE_4 && curr - lastTrans >= 10000) {
+    // Soap ready but no one pumps, go back to idle (10 s)
+    state = STATE_0;
+    ledArray(0);
+    lastTrans = millis();
+  } else if (state == STATE_7 && curr - lastTrans >= 1000) {
+    // Timeout for response, leave (1 s)
+    state = STATE_6;
+    ledArray(6);
+    lastTrans = millis();
+  } else if (state == STATE_5 && curr - lastTrans >= 500) {
+    // Pump success, go to idle (0.5 s)
+    state = STATE_0;
+    ledArray(0);
+    lastTrans = millis();
+  } else if (state == STATE_6 && curr - lastTrans >= 500) {
+    // Pump failure, go to idle (0.5 s)
     state = STATE_0;
     ledArray(0);
     lastTrans = millis();
@@ -144,6 +160,12 @@ void loop() {
     } else if (choice == 2 && state == STATE_1) {
       state = STATE_2;
       lastTrans = millis();
+    } else if (choice == 5 && state == STATE_7) {
+      state = STATE_5;
+      lastTrans = millis();
+    } else if (choice == 6 && state == STATE_7) {
+      state = STATE_6;
+      lastTrans = millis();
     }
     
     ledArray(choice);
@@ -158,7 +180,8 @@ void readPump(){
     Serial.print("Pump: ");
     printHex(nuidPICC, 4);
     Serial.println();
-    delay(1000);
+    state = STATE_7;
+    lastTrans = millis();
   }
   /*
   Serial.print(analogRead(SOAPBUTTON));
