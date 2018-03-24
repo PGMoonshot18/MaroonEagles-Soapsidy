@@ -236,11 +236,11 @@ void readCard(){
   //Serial.print(F("PICC type: "));
   //MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
   //Serial.println(rfid.PICC_GetTypeName(piccType));
-
+  /*
   if (rfid.uid.uidByte[0] != nuidPICC[0] || 
     rfid.uid.uidByte[1] != nuidPICC[1] || 
     rfid.uid.uidByte[2] != nuidPICC[2] || 
-    rfid.uid.uidByte[3] != nuidPICC[3] ) {
+    rfid.uid.uidByte[3] != nuidPICC[3] ) {*/
     //Serial.println(F("A new card has been detected."));
 
     // Move to card detected state
@@ -266,11 +266,6 @@ void readCard(){
     //Serial.print(F("In dec: "));
     //printDec(rfid.uid.uidByte, rfid.uid.size);
     //Serial.println();
-  }
-  else{
-    printHex(rfid.uid.uidByte, rfid.uid.size);
-    Serial.println();
-  }
 
   // Halt PICC
   rfid.PICC_HaltA();
