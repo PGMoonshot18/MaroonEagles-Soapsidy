@@ -44,8 +44,10 @@
 #define STATE_5 12 //Discount Recieved 
 #define STATE_6 13 //Error
 #define STATE_7 1 // Pumped, waiting for response
+#define STATE_8 2 //DISPENSER: success
 
 #define SOAPBUTTON 6
+#define HWTYPE 3
 
 #define IS_PUMP 0
 #define IS_DISPENSER 1
@@ -60,7 +62,7 @@ MFRC522::MIFARE_Key key;
 // Init array that will store new NUID 
 byte nuidPICC[4];
 int choice = 0;
-
+  
 // State Variables
 int state = STATE_0;
 int hw_type = IS_PUMP;
@@ -95,6 +97,7 @@ void setup() {
   pinMode(STATE_6, OUTPUT);
 
   pinMode(SOAPBUTTON,INPUT);
+  pinMode(HWTYPE,INPUT);
 }
  
 void loop() {
@@ -102,6 +105,21 @@ void loop() {
   //Serial.print(state);
   //Serial.println();
   curr = millis();
+
+  // Hardware type
+  if (digitalRead(HWTYPE) == HIGH) {
+    if (hw_type == IS_PUMP) {
+      state = STATE_0;
+      ledArray(0);
+    }
+    hw_type = IS_DISPENSER;
+  } else {
+    if (hw_type == IS_DISPENSER) {
+      state = STATE_0;
+      ledArray(0);
+    }
+    hw_type = IS_PUMP;
+  }
   // Timeouts and auto state changes
   if (state == STATE_1 && curr - lastTrans >= 1000) {
     // Card but no response, go to error (1 s)
@@ -138,6 +156,11 @@ void loop() {
     state = STATE_0;
     ledArray(0);
     lastTrans = millis();
+  } else if (state == STATE_8 && curr - lastTrans >= 300) {
+    // Dispense done
+    state = STATE_0;
+    ledArray(0);
+    lastTrans = millis();
   }
   
   // Only read cards when in idle state
@@ -154,11 +177,24 @@ void loop() {
   if(Serial.available() > 0){
     choice = Serial.parseInt();
     // Change states depending on result and previous state
-    if (choice == 3 && state == STATE_1) {
-      state = STATE_3;
-      lastTrans = millis();
-    } else if (choice == 2 && state == STATE_1) {
+    if (choice == 2 && state == STATE_1) {
       state = STATE_2;
+      lastTrans = millis();
+    } else if (choice == 3 && state == STATE_1) {
+      if (hw_type == IS_PUMP) {
+        state = STATE_3;
+      } else {
+        state = STATE_8;
+        // Hardcoded blinking for success
+        ledArray(choice);
+        delay(300);
+        ledArray(0);
+        delay(300);
+        ledArray(choice);
+        delay(300);
+        ledArray(0);
+        delay(300);
+      }
       lastTrans = millis();
     } else if (choice == 5 && state == STATE_7) {
       state = STATE_5;

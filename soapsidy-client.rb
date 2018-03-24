@@ -96,10 +96,10 @@ if port_connected?(port_str)
       # Write serial bit to Arduino
       if status == "success"
         puts "Soap dispensed."
-        sp.write('5')
+        sp.write('3')
       elsif status == "failure"
         puts "Please collect more points."
-        sp.write('6')
+        sp.write('2')
       else
         puts "An error occurred with the dispenser."
         sp.write('6')
